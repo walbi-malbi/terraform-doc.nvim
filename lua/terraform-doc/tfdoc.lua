@@ -293,14 +293,18 @@ function M.open_doc(provider_namespace, provider_name, provider_version, categor
 		vim.api.nvim_win_set_buf(winid, bufnr)
 	end
 
-	vim.fn.termopen(cmd, {
-		detach = 0,
-		on_exit = function(_, _)
-			os.remove(tempfile)
-		end,
-	})
+	-- テンポラリファイルに書き込みが完了した後、glowコマンドを実行
+	local on_write_done = function()
+		vim.fn.termopen(cmd, {
+			detach = 0,
+			on_exit = function(_, _)
+				os.remove(tempfile)
+			end,
+		})
+	end
+	vim.schedule_wrap(on_write_done)()
 
-	-- バッファローカルなマップを設定する
+	-- バッファローカルなマップを設定
 	local map_buf_opts = { noremap = true, silent = true, nowait = true }
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "q", "<Cmd>bdelete<CR>", map_buf_opts)
 
