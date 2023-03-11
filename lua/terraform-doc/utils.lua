@@ -29,7 +29,7 @@ end
 
 -- glowでmarkdownを表示
 function M.open_doc(tempfile, open_type)
-	local cmd = string.format("glow %s", tempfile)
+	local cmd = string.format("%s -c 'glow %s; sleep 0.2'", vim.env.SHELL, tempfile)
 	local bufnr = vim.api.nvim_create_buf(false, true)
 
 	if open_type ~= "floating" and open_type ~= "split" and open_type ~= "vsplit" and open_type ~= "tab" then
@@ -69,16 +69,12 @@ function M.open_doc(tempfile, open_type)
 		vim.api.nvim_win_set_buf(winid, bufnr)
 	end
 
-	-- テンポラリファイルに書き込みが完了した後、glowコマンドを実行
-	local on_write_done = function()
-		vim.fn.termopen(cmd, {
-			detach = 0,
-			on_exit = function(_, _)
-				os.remove(tempfile)
-			end,
-		})
-	end
-	vim.schedule_wrap(on_write_done)()
+	vim.fn.termopen(cmd, {
+		detach = 0,
+		on_exit = function(_, _)
+			os.remove(tempfile)
+		end,
+	})
 
 	-- バッファローカルなマップを設定
 	local map_buf_opts = { noremap = true, silent = true, nowait = true }
