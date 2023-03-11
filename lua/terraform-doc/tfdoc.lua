@@ -168,7 +168,7 @@ function M.get_latest_version(provider_namespace, provider_name)
 	local latest_version = nil
 	local provider_url = "https://registry.terraform.io/v1/providers/" .. provider_namespace .. "/" .. provider_name
 
-	local handle = io.popen("curl -s " .. provider_url .. " | jq . -c")
+	local handle = io.popen("curl -s " .. provider_url)
 	if handle ~= nil then
 		local provider_info = handle:read("*a")
 		handle:close()
@@ -194,7 +194,7 @@ function M.open_doc(provider_namespace, provider_name, provider_version, categor
 		.. provider_version
 
 	local docs_table
-	local docs_table_handle = io.popen("curl -s " .. provider_url .. " | jq . -c")
+	local docs_table_handle = io.popen("curl -s " .. provider_url)
 	if docs_table_handle ~= nil then
 		local provider_info = docs_table_handle:read("*a")
 		docs_table_handle:close()
@@ -235,7 +235,7 @@ function M.open_doc(provider_namespace, provider_name, provider_version, categor
 
 	local doc_md
 
-	local doc_handle = io.popen("curl -s " .. doc_url .. " | jq . -c")
+	local doc_handle = io.popen("curl -s " .. doc_url)
 	if doc_handle ~= nil then
 		local doc = doc_handle:read("*a")
 		doc_handle:close()
@@ -248,7 +248,6 @@ function M.open_doc(provider_namespace, provider_name, provider_version, categor
 		return "failed to get markdown document"
 	end
 
-	-- Prototype
 	local tempfile = vim.fn.tempname() .. ".md"
 	local file = io.open(tempfile, "w")
 	file:write(doc_md)
