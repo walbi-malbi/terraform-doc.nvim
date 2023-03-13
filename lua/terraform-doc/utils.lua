@@ -29,12 +29,13 @@ end
 
 -- glowでmarkdownを表示
 function M.open_doc(tempfile, open_type)
-	local cmd = string.format("%s -c 'glow %s; sleep 0.2'", vim.env.SHELL, tempfile)
 	local bufnr = vim.api.nvim_create_buf(false, true)
 
 	if open_type ~= "floating" and open_type ~= "split" and open_type ~= "vsplit" and open_type ~= "tab" then
 		open_type = "vsplit"
 	end
+
+	local win_id
 
 	if open_type == "floating" then
 		-- Floating windowを作成してバッファを設定
@@ -42,7 +43,7 @@ function M.open_doc(tempfile, open_type)
 		local win_height = math.ceil(vim.o.lines * 0.8)
 		local row = math.ceil((vim.o.lines - win_height) / 2 - 1)
 		local col = math.ceil((vim.o.columns - win_width) / 2)
-		local win_id = vim.api.nvim_open_win(bufnr, true, {
+		win_id = vim.api.nvim_open_win(bufnr, true, {
 			relative = "editor",
 			row = row,
 			col = col,
@@ -55,19 +56,22 @@ function M.open_doc(tempfile, open_type)
 	elseif open_type == "split" then
 		-- スプリットウィンドウを作成して、バッファを設定
 		vim.api.nvim_command("split")
-		local winid = vim.api.nvim_get_current_win()
-		vim.api.nvim_win_set_buf(winid, bufnr)
+		win_id = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(win_id, bufnr)
 	elseif open_type == "vsplit" then
 		-- Vスプリットウィンドウを作成して、バッファを設定（デフォルト）
 		vim.api.nvim_command("vsplit")
-		local winid = vim.api.nvim_get_current_win()
-		vim.api.nvim_win_set_buf(winid, bufnr)
+		win_id = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(win_id, bufnr)
 	elseif open_type == "tab" then
 		-- 新規タブを作成して、バッファを設定
 		vim.api.nvim_command("tabnew")
-		local winid = vim.api.nvim_get_current_win()
-		vim.api.nvim_win_set_buf(winid, bufnr)
+		win_id = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(win_id, bufnr)
 	end
+
+	local doc_width = vim.api.nvim_win_get_width(0)
+	local cmd = string.format("%s -c 'glow -w %s %s; sleep 0.2'", vim.env.SHELL, doc_width - 7, tempfile)
 
 	vim.fn.termopen(cmd, {
 		detach = 0,
